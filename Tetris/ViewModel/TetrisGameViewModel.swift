@@ -34,6 +34,7 @@ class TetrisGameViewModel: ObservableObject {
     
     var anyCancellable: AnyCancellable?
     var lastMoveLocation: CGPoint?
+    var lastRotateAngle: Angle?
     
     init() {
         anyCancellable = tetrisGameModel.objectWillChange.sink {
@@ -85,8 +86,37 @@ class TetrisGameViewModel: ObservableObject {
         }
     }
     
-    func squareClicked(row: Int, column: Int) {
-        tetrisGameModel.blockClicked(row: row, column: column)
+    func getRotateGesture() -> some Gesture {
+        let tap = TapGesture()
+            .onEnded({self.tetrisGameModel.rotateTetromino(clockwise: true)})
+        
+        let rotate = RotationGesture()
+            .onChanged(onRotateChanged(value:))
+            .onEnded(onRotateEnd(value:))
+        
+        return tap.simultaneously(with: rotate)
+    }
+    
+    func onRotateChanged(value: RotationGesture.Value) {
+        guard let start = lastRotateAngle else {
+            lastRotateAngle = value
+            return
+        }
+        
+        let diff = value - start
+        if diff.degrees > 10 {
+            tetrisGameModel.rotateTetromino(clockwise: true)
+            lastRotateAngle = value
+            return
+        } else if diff.degrees < -10 {
+            tetrisGameModel.rotateTetromino(clockwise: false)
+            lastRotateAngle = value
+            return
+        }
+    }
+    
+    func onRotateEnd(value: RotationGesture.Value) {
+        lastRotateAngle = nil
     }
     
     func getMoveGesture() -> some Gesture {
