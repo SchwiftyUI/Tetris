@@ -266,7 +266,7 @@ struct Tetromino {
     }
     
     static func getKicks(blockType: BlockType, rotation: Int, clockwise: Bool) -> [BlockLocation] {
-        let rotationCount = getBlocks(blockType: blockType).count
+        let rotationCount = getAllBlocks(blockType: blockType).count
         
         var index = rotation % rotationCount
         if index < 0 { index += rotationCount }
